@@ -29,7 +29,7 @@ async def sell_amount(callback: CallbackQuery):
         f"💰 **Vente #{order_id}**\n\n"
         f"⭐ Quantité : **{amount} Stars**\n"
         f"💎 Tu recevras : **{ton_to_receive} GRAM**\n\n"
-        f"1. Envoie les {amount} Stars au bot\n"
+        f"1. Envoie les {amount} Stars à @TON_USERNAME_ICI sur Telegram\n"
         f"2. Contacte un admin pour validation\n"
         f"3. Tu recevras les GRAM après vérification"
     )
