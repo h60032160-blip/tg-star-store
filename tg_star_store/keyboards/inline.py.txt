@@ -1,0 +1,45 @@
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from config import TON_WALLET
+
+def main_menu() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text="⭐ Acheter des Stars", callback_data="buy_stars"),
+        InlineKeyboardButton(text="💰 Vendre des Stars", callback_data="sell_stars")
+    )
+    builder.row(
+        InlineKeyboardButton(text="📊 Mes commandes", callback_data="my_orders"),
+        InlineKeyboardButton(text="ℹ️ Infos / Support", callback_data="info")
+    )
+    return builder.as_markup()
+
+def buy_amounts() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    for amount in [50, 100, 250, 500, 1000, 2500, 5000, 10000]:
+        builder.button(text=f"{amount} ⭐", callback_data=f"buy_{amount}")
+    builder.adjust(3)
+    builder.row(InlineKeyboardButton(text="🔙 Retour", callback_data="back_main"))
+    return builder.as_markup()
+
+def sell_amounts() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    for amount in [50, 100, 250, 500, 1000, 2500, 5000]:
+        builder.button(text=f"{amount} ⭐", callback_data=f"sell_{amount}")
+    builder.adjust(3)
+    builder.row(InlineKeyboardButton(text="🔙 Retour", callback_data="back_main"))
+    return builder.as_markup()
+
+def payment_keyboard(ton_amount: float, order_id: int) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(
+            text="💎 Payer en GRAM",
+            url=f"https://app.tonkeeper.com/transfer/{TON_WALLET}?amount={int(ton_amount * 1e9)}&text=order_{order_id}"
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(text="🔄 J'ai payé", callback_data=f"paid_{order_id}"),
+        InlineKeyboardButton(text="❌ Annuler", callback_data=f"cancel_{order_id}")
+    )
+    return builder.as_markup()

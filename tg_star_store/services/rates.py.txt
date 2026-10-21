@@ -1,0 +1,7 @@
+from config import STAR_BUY_RATE, STAR_SELL_RATE
+
+def calculate_buy(amount_stars: float) -> float:
+    return round(amount_stars * STAR_BUY_RATE, 4)
+
+def calculate_sell(amount_stars: float) -> float:
+    return round(amount_stars * STAR_SELL_RATE, 4)

@@ -1,0 +1,56 @@
+from aiogram import Router, F
+from aiogram.types import CallbackQuery
+from keyboards.inline import buy_amounts, payment_keyboard, main_menu
+from services.rates import calculate_buy
+from database.db import create_order, update_order_status
+from config import MIN_BUY, MAX_BUY, TON_WALLET
+
+router = Router()
+
+@router.callback_query(F.data == "buy_stars")
+async def buy_menu(callback: CallbackQuery):
+    await callback.message.edit_text("⭐ Combien de Stars veux-tu acheter ?", reply_markup=buy_amounts())
+    await callback.answer()
+
+@router.callback_query(F.data.startswith("buy_"))
+async def buy_amount(callback: CallbackQuery):
+    amount = int(callback.data.split("_")[1])
+    if amount < MIN_BUY or amount > MAX_BUY:
+        await callback.answer("Montant invalide", show_alert=True)
+        return
+
+    ton_needed = calculate_buy(amount)
+    order_id = await create_order(callback.from_user.id, "buy", amount, ton_needed)
+
+    text = (
+        f"🛒 **Commande #{order_id}**\n\n"
+        f"⭐ Quantité : **{amount} Stars**\n"
+        f"💎 Prix : **{ton_needed} GRAM**\n\n"
+        f"Envoie exactement **{ton_needed} GRAM** à :\n"
+        f"`{TON_WALLET}`\n\n"
+        f"Commentaire : `order_{order_id}`\n\n"
+        f"Puis clique sur « J'ai payé »."
+    )
+    await callback.message.edit_text(
+        text,
+        reply_markup=payment_keyboard(ton_needed, order_id),
+        parse_mode="Markdown"
+    )
+    await callback.answer()
+
+@router.callback_query(F.data.startswith("paid_"))
+async def user_paid(callback: CallbackQuery):
+    order_id = int(callback.data.split("_")[1])
+    await update_order_status(order_id, "pending_review")
+    await callback.message.edit_text(
+        f"✅ Paiement signalé pour #{order_id}.\nUn admin va vérifier et t'envoyer les Stars.",
+        reply_markup=main_menu()
+    )
+    await callback.answer()
+
+@router.callback_query(F.data.startswith("cancel_"))
+async def cancel_order(callback: CallbackQuery):
+    order_id = int(callback.data.split("_")[1])
+    await update_order_status(order_id, "cancelled")
+    await callback.message.edit_text("❌ Commande annulée.", reply_markup=main_menu())
+    await callback.answer()
